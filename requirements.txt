@@ -1,0 +1,15 @@
+# Core pipeline dependencies (fetch → linking → prompts → inference).
+#
+# The linking stage also needs the scispaCy model `en_core_sci_md`, which is
+# not on PyPI. After installing the packages below, install it with:
+#
+#   pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/en_core_sci_md-0.5.4.tar.gz
+#
+# numpy is pinned < 2 for compatibility with the spaCy 3.7 / scispaCy wheels.
+
+pandas>=2.0,<3
+numpy>=1.26,<2
+requests>=2.31
+nltk>=3.8
+spacy>=3.7,<3.8
+openai>=1.55
