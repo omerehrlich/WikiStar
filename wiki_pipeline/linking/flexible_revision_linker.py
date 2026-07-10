@@ -6,7 +6,7 @@ section to compare against. Rather than assuming a section keeps a stable
 title, this matches on both title similarity (Levenshtein) and content
 similarity (scispaCy embeddings), looking back over a configurable window of
 earlier edits. The chosen match supplies the "previous revision" the prompt
-stage diffs against, and a Wikipedia diff URL for traceability.
+stage diffs against.
 """
 import os
 from typing import Dict, List, Optional, Tuple
@@ -29,9 +29,9 @@ class FlexibleRevisionLinker:
 
     def __init__(
         self,
-        title_threshold: float = 0.7,
-        content_threshold: float = 0.95,
-        lookback_window: int = 20,
+        title_threshold: float = 0.8,
+        content_threshold: float = 0.99,
+        lookback_window: int = 1000,
     ):
         """
         Args:
@@ -230,45 +230,6 @@ class FlexibleRevisionLinker:
         }
 
 
-def find_chronological_previous_revision(df: pd.DataFrame, current_idx: int) -> Optional[int]:
-    """Find the chronologically previous revision ID for a given row.
-
-    Used to build a diff URL for 'none' matches, where the similarity search
-    found no comparable section but a raw previous revision still exists.
-    """
-    if current_idx == 0:
-        return None
-
-    current_rev_id = df.iloc[current_idx]["Revision ID"]
-
-    for i in range(current_idx - 1, -1, -1):
-        prev_rev_id = df.iloc[i]["Revision ID"]
-        if prev_rev_id != current_rev_id:
-            return prev_rev_id
-
-    return None
-
-
-def generate_wikilink_url(article_name: str, current_rev_id: int, previous_rev_id: int) -> str:
-    """Build a Wikipedia diff URL between two revisions."""
-    if not previous_rev_id or previous_rev_id == "" or pd.isna(previous_rev_id):
-        return ""
-
-    try:
-        title_slug = str(article_name).replace(" ", "_")
-        prev_id = int(float(previous_rev_id))
-        curr_id = int(float(current_rev_id))
-
-        return (
-            f"https://en.wikipedia.org/w/index.php"
-            f"?title={title_slug}"
-            f"&diff={curr_id}"
-            f"&oldid={prev_id}"
-        )
-    except (ValueError, TypeError):
-        return ""
-
-
 def add_flexible_revision_linking(
     df: pd.DataFrame,
     article_name: str,
@@ -280,14 +241,13 @@ def add_flexible_revision_linking(
 
     Args:
         df: DataFrame from stage 1 (must be sorted chronologically).
-        article_name: Article title, used to build diff URLs.
+        article_name: Article title (for logging).
         title_threshold: Levenshtein similarity threshold for title matching.
         content_threshold: Semantic similarity threshold for content matching.
         lookback_window: Number of previous revisions to search.
 
     Returns:
-        The DataFrame with ``Flexible_*`` columns and a ``Flexible_Revision_URL``
-        column added.
+        The DataFrame with ``Flexible_*`` columns added.
     """
     print("=" * 60)
     print("FLEXIBLE REVISION LINKING")
@@ -301,25 +261,6 @@ def add_flexible_revision_linking(
 
     linker = FlexibleRevisionLinker(title_threshold, content_threshold, lookback_window)
     enhanced_df = linker.process_dataframe(df)
-
-    # Generate Wikipedia diff URLs.
-    print("Generating Wikipedia diff URLs...")
-    flexible_urls = []
-    for idx, row in enhanced_df.iterrows():
-        current_rev_id = row["Revision ID"]
-        match_type = row["Flexible_Match_Type"]
-        flexible_prev_id = row["Flexible_Previous_Revision_ID"]
-
-        if match_type == "none":
-            # For 'none' matches, fall back to the chronologically previous revision.
-            chronological_prev_id = find_chronological_previous_revision(enhanced_df, idx)
-            url = generate_wikilink_url(article_name, current_rev_id, chronological_prev_id)
-        else:
-            url = generate_wikilink_url(article_name, current_rev_id, flexible_prev_id)
-
-        flexible_urls.append(url)
-
-    enhanced_df["Flexible_Revision_URL"] = flexible_urls
 
     # Print statistics.
     stats = linker.get_stats()
@@ -338,11 +279,6 @@ def add_flexible_revision_linking(
         print(f"  Average match distance: {avg_distance:.1f} revisions")
         print(f"  Maximum match distance: {max_distance} revisions")
 
-    urls_generated = len([url for url in flexible_urls if url != ""])
-    print(
-        f"  URLs generated: {urls_generated}/{len(enhanced_df)} "
-        f"({urls_generated / len(enhanced_df) * 100:.1f}%)"
-    )
     print(f"  Embeddings cached: {stats['cache_size']}")
 
     print("=" * 60)

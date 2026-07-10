@@ -57,9 +57,10 @@ python -m wiki_pipeline.pipeline \
     --model "gpt-5-mini"
 ```
 
-The output CSV contains one row per section-level edit, with the matched
-previous revision, the generated prompt, and the model's `Labels` and
-`Explanation` columns.
+The output CSV contains one row per section-level edit, with these columns:
+`Article`, `Section`, `Revision Id`, `Timestamp`, `Author`,
+`Previous Section Text` (the matched previous revision), `Edited Section Text`
+(the current revision), and the model's `Labels` and `Explanations`.
 
 > **Note on model names.** Models in the `gpt-5` family are reasoning models
 > that reject a custom `temperature`; the client never sends one. Any

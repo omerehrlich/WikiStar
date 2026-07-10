@@ -83,21 +83,26 @@ def run_pipeline(article_name: str, output_path: str, model_name: str) -> str:
         parsed_ok += 1
     print(f"Parsed {parsed_ok}/{len(prompts)} responses successfully.")
 
-    prompted_df["Labels"] = labels_col
-    prompted_df["Explanation"] = explanation_col
-
-    # Insert Labels/Explanation right after the Changed Content column.
-    cols = list(prompted_df.columns)
-    cols.remove("Labels")
-    cols.remove("Explanation")
-    insert_after = "Changed Content" if "Changed Content" in cols else cols[-1]
-    insert_at = cols.index(insert_after) + 1
-    cols = cols[:insert_at] + ["Labels", "Explanation"] + cols[insert_at:]
-    prompted_df = prompted_df[cols]
+    # Assemble the published output with a fixed, human-readable set of
+    # columns: edit metadata, the two revisions the model compared, and the
+    # model's labels + explanations.
+    output_df = pd.DataFrame(
+        {
+            "Article": normalized_title,
+            "Section": prompted_df["Section"],
+            "Revision Id": prompted_df["Revision ID"],
+            "Timestamp": prompted_df["Timestamp"],
+            "Author": prompted_df["User"],
+            "Previous Section Text": prompted_df["Flexible_Previous_Content"],
+            "Edited Section Text": prompted_df["Changed Content"],
+            "Labels": labels_col,
+            "Explanations": explanation_col,
+        }
+    )
 
     output_path = os.path.abspath(output_path)
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    prompted_df.to_csv(output_path, index=False)
+    output_df.to_csv(output_path, index=False)
     print(f"\nFinal results saved to: {output_path}")
     return output_path
 

@@ -21,7 +21,7 @@ label_mapping = {
     8: "Technical Terms Removed",
     9: "Tense Change",
     10: "References Added",
-    11: "No Significant Changes",
+    11: "Non Scientific Edit",
 }
 
 
@@ -89,7 +89,7 @@ def _parse_old_prompt_text(response: str, taxonomy):
 def parse_prompt(response: str, taxonomy):
     """Parse a model response into ``{label: explanation}``.
 
-    Label 11 ("No Significant Changes") is allowed even if not present in the
+    Label 11 ("Non Scientific Edit") is allowed even if not present in the
     taxonomy. If a label appears more than once, explanations are aggregated.
 
     Args:

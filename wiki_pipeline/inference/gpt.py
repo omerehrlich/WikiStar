@@ -38,12 +38,8 @@ def _summarize_batch(batch_status) -> dict:
 class GPT:
     """Thin wrapper over the OpenAI Batch API for prompt classification."""
 
-    def __init__(self, model_name="gpt-5-mini", api_key=None, reasoning_effort=None):
+    def __init__(self, model_name="gpt-5-mini", api_key=None):
         self.model_name = model_name
-        # Reasoning effort for reasoning-capable models (gpt-5 family, o-series):
-        # one of "minimal" | "low" | "medium" | "high". None => don't send the
-        # parameter at all, so non-reasoning models (e.g. gpt-4o) aren't rejected.
-        self.reasoning_effort = reasoning_effort
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError(
@@ -121,10 +117,6 @@ class GPT:
                     "model": self.model_name,
                     "messages": [{"role": "user", "content": prompt}],
                 }
-                # Only include reasoning_effort when explicitly requested, so
-                # non-reasoning models (e.g. gpt-4o) don't reject the request.
-                if self.reasoning_effort is not None:
-                    body["reasoning_effort"] = self.reasoning_effort
                 entry = {
                     "custom_id": str(idx),
                     "method": "POST",

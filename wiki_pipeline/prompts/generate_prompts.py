@@ -21,7 +21,6 @@ def create_taxonomy(taxonomy_csv_file_path):
         key = int(row["#"])
         taxonomy[key] = {
             "category": row["Category Name"],
-            "is_for_section_split": row["Section_Split"],
             "definition": row["Definition"],
             "example": row["Example"],
         }
