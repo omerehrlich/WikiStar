@@ -1,4 +1,25 @@
-# Wikipedia Revision Classification Pipeline
+<div align="center">
+
+<img width="500" alt="WikiSTAR_logo" src="https://github.com/user-attachments/assets/befecb22-4dfa-4b81-a94a-d51f33a3b326" />
+
+
+# WikiSTAR
+
+**Wikipedia Revision Classification Pipeline**
+
+[![arXiv](https://img.shields.io/badge/arXiv-2607.12441-b31b1b.svg)](https://arxiv.org/abs/2607.12441)
+[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![pandas](https://img.shields.io/badge/pandas-150458?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![spaCy](https://img.shields.io/badge/spaCy-09A3D5?logo=spacy&logoColor=white)](https://spacy.io/)
+[![scispaCy](https://img.shields.io/badge/scispaCy-en__core__sci__md-0A9EDC)](https://allenai.github.io/scispacy/)
+[![OpenAI](https://img.shields.io/badge/OpenAI%20Batch%20API-412991?logo=openai&logoColor=white)](https://platform.openai.com/docs/guides/batch)
+[![MediaWiki API](https://img.shields.io/badge/MediaWiki%20API-006699?logo=wikipedia&logoColor=white)](https://www.mediawiki.org/wiki/API:Main_page)
+
+</div>
+
+This repository contains the code for the paper
+[**WikiSTAR: A System for Shedding Light on the Hidden History of Scientific
+Wikipedia Articles**](https://arxiv.org/abs/2607.12441) (2026).
 
 Classify the scientific content of Wikipedia article edits. Given an article
 title, the pipeline fetches its full revision history, reconstructs how each
@@ -74,6 +95,7 @@ the slow fetch + linking on one host and inference on another):
 
 ```python
 import pandas as pd
+
 from wiki_pipeline.fetch import fetch_revision_history
 from wiki_pipeline.linking import add_flexible_revision_linking
 from wiki_pipeline.prompts import (
@@ -96,4 +118,19 @@ prompted, prompts = generate_prompts_from_flexible_linking(
 
 responses = GPT(model_name="gpt-5-mini").predict(prompts)
 parsed = [parse_prompt(r, taxonomy) for r in responses]
+```
+
+## Citation
+
+```bibtex
+@misc{ehrlich2026wikistar,
+  title         = {WikiSTAR: A System for Shedding Light on the Hidden History
+                   of Scientific Wikipedia Articles},
+  author        = {Omer Ehrlich and Nitzan Barzilay and Rona Aviram and Tom Hope},
+  year          = {2026},
+  eprint        = {2607.12441},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2607.12441}
+}
 ```
